@@ -1,72 +1,201 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <div class="container">
-    <h1>Welcome to Tauri!</h1>
-
-    <div class="row">
-      <a href="https://tauri.app" target="_blank">
-        <img src="./assets/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-
-          <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <!-- <b-icon-gear-fill></b-icon-gear-fill> -->
+  <div>
+    <div id="sliderBox">
+      <div id="slider" :class="{ 'slider-open': docSettingOn }" @click="toggleSlider">
+        <div style="line-height: 2">
+          <b-icon-file-earmark v-if="docSettingOn"></b-icon-file-earmark>
+          <b-icon-fonts v-else></b-icon-fonts>
+          {{ docSettingOn ? "File" : "Text" }}
+        </div>
+      </div>
+      <div>
+        <b-icon-fonts></b-icon-fonts>
+        Text
+      </div>
+      <div>
+        <b-icon-file-earmark></b-icon-file-earmark>
+        File
+      </div>
     </div>
-
-    <p>Fill out the form below and click Greet to get a response from test.py</p>
-
-    <div>
-      <input v-model="name" type="text" placeholder="Enter your name" />
-      <input v-model="arg1" type="text" placeholder="Enter argument 1" />
-      <input v-model="arg2" type="text" placeholder="Enter argument 2" />
+  </div>
+  <div>
+    <div class="iconButton" id="settingsIcon" @click="showSettingsCard = true">
+      <b-icon-gear-fill></b-icon-gear-fill>
     </div>
+  </div>
+  <div>
+    <b-button-group class="langInput">
+      <b-button
+        v-for="(language, index) in displayedInputLangList"
+        :key="index"
+        :class="{ 'selected': selectedInputLanguage === language }"
+        @click="selectInputLanguage(language)"
+      >
+        {{ language }}
+      </b-button>
+    </b-button-group>
+    <div class="optionArrow iconButton" @click="toggleInputLanguageGrid">
+      <b-icon-caret-up-fill v-if="showInputLanguageGrid"></b-icon-caret-up-fill>
+      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
+    </div>
+    <div class="iconButton swapLangBtn" @click="swapLanguages">
+      <b-icon-arrow-left-right></b-icon-arrow-left-right>
+    </div>
+  </div>
+  <div>
+    <b-button-group class="langInput">
+      <b-button
+        v-for="(language, index) in displayedOutputLangList"
+        :key="index"
+        :class="{ 'selected': selectedOutputLanguage === language }"
+        @click="selectOutputLanguage(language)"
+      >
+        {{ language }}
+      </b-button>
+    </b-button-group>
+    <div class="optionArrow iconButton" @click="toggleOutputLanguageGrid">
+      <b-icon-caret-up-fill v-if="showOutputLanguageGrid"></b-icon-caret-up-fill>
+      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
+    </div>
+  </div>
+  <div>
+    <div v-if="showInputLanguageGrid" class="grid-container">
+      <div
+        v-for="(language, index) in languageList"
+        :key="index"
+        class="grid-item"
+        :class="{ 'gridSelected': selectedInputLanguage === language }"
+        @click="addToDisplayedInputLanguages(language)"
+      >
+        {{ language }}
+      </div>
+    </div>
+    <b-form-textarea
+      class="textarea"
+      v-model="inputText"
+      placeholder="Enter something..."
+      rows="3"
+      max-rows="6"
+    ></b-form-textarea>
+  </div>
+  <div>
+    <div v-if="showOutputLanguageGrid" class="grid-container">
+      <div
+        v-for="(language, index) in languageList"
+        :key="index"
+        class="grid-item"
+        @click="toggleOutputLanguageGrid"
+      >
+        {{ language }}
+      </div>
+    </div>
+    <b-form-textarea
+      class="textarea"
+      id="outputtext"
+      v-model="outputText"
+      rows="3"
+      max-rows="6"
+    ></b-form-textarea>
+  </div>
+  <div />
+  <div><b-button id="translate">translate</b-button></div>
+  <div>
+    <div v-if="showSettingsCard" class="settings-card">
+      <div class="card-content">
+        <h2>Settings</h2>
+        <p>This is the settings card</p>
+        <p>ideas for settings</p>
+        <ul>dark theme</ul>
+        <ul>language option settings</ul>
+        <ul>which translator to use</ul>
+        <ul>in doc translation, what output? (file or text)</ul>
 
-    <button @click="greet">Greet</button>
-
-    <div style="margin-top: 20px;">
-      <div id="greetMsg">{{ greetingMsg }}</div>
-      <div id="argMsg">{{ argumentsMsg }}</div>
+      </div>
+      <div class="card-close" @click="showSettingsCard = false">
+        <b-icon-x></b-icon-x>
+      </div>
     </div>
   </div>
 </template>
 
+
 <script>
+const languageList = [
+  "Arabic",
+  "Chinese",
+  "English",
+  "French",
+  "German",
+  "Hindi",
+  "Italian",
+  "Japanese",
+  "Polish",
+  "Portuguese",
+  "Turkish",
+  "Russian",
+  "Spanish",
+];
+
 export default {
   data() {
     return {
-      name: "",
-      arg1: "",
-      arg2: "",
-      greetingMsg: "",
-      argumentsMsg: "",
+      docSettingOn: false,
+      showInputLanguageGrid: false,
+      showOutputLanguageGrid: false,
+      showSettingsCard: false,
+      languageList,
+      displayedInputLangList: languageList.slice(2, 5),
+      displayedOutputLangList: languageList.slice(2, 5),
+      selectedInputLanguage: languageList[2],
+      selectedOutputLanguage: languageList[3],
+      inputText: "",
+      outputText: ""
     };
   },
   methods: {
-    async greet() {
-      // Check if any input is empty
-      if (!this.name || !this.arg1 || !this.arg2) {
-        alert("Please fill in all the fields");
-        return;
-      }
-
-      // Pass user-input values to Python script
-      const args = [this.name, this.arg1, this.arg2];
-      const command = window.__TAURI__.shell.Command.sidecar("bin/python/test", args);
-      const output = await command.execute();
-      const { stdout, stderr } = output;
-
-      // Parse the JSON output
-      const jsonOutput = JSON.parse(stdout);
-
-      // Access individual pieces of information
-      this.greetingMsg = jsonOutput.greeting;
-      this.argumentsMsg = jsonOutput.arguments;
+    toggleSlider() {
+      this.docSettingOn = !this.docSettingOn;
+    },
+    toggleInputLanguageGrid() {
+      this.showInputLanguageGrid = !this.showInputLanguageGrid;
+    },
+    toggleOutputLanguageGrid() {
+      this.showOutputLanguageGrid = !this.showOutputLanguageGrid;
+    },
+    selectInputLanguage(language) {
+      this.selectedInputLanguage = language;
+    },    
+    selectOutputLanguage(language) {
+      this.selectedOutputLanguage = language;
+    },
+    swapLanguages(){
+      [ this.selectedOutputLanguage, this.selectedInputLanguage ] = [ this.selectedInputLanguage, this.selectedOutputLanguage ];
+      [ this.inputText, this.outputText ] = [ this.outputText, this.inputText ];
+    },
+    addToDisplayedInputLanguages(language) {
+      if (!this.displayedInputLangList.includes(language)) {
+        this.displayedInputLangList.unshift(language);
+        this.displayedInputLangList.pop();
+      };
+      this.selectInputLanguage(language);
+      this.toggleInputLanguageGrid();
     },
   },
 };
 </script>
+
+<style scoped>
+
+
+#slider {
+  transition: transform 0.3s ease-in-out;
+}
+
+.slider-open {
+  transform: translateX(100%); /* Set your desired distance */
+}
+</style>
 
 <style scoped>
 /* Your styles here */
@@ -74,13 +203,15 @@ export default {
   filter: drop-shadow(0 0 2em #ffe21c);
 }
 
-input {
-  margin: 20px;
+select,
+input,
+textarea {
+  margin: 10px;
   width: 500px;
 }
 
 button {
-  margin: auto;
+  margin: 10px;
   width: 200px;
 }
 </style>
