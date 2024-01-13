@@ -35,7 +35,7 @@
         {{ language }}
       </b-button>
     </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleInputLanguageGrid">
+    <div class="optionArrow iconButton" @click="toggleRequestInputLanguageGrid">
       <b-icon-caret-up-fill v-if="showInputLanguageGrid"></b-icon-caret-up-fill>
       <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
     </div>
@@ -54,7 +54,7 @@
         {{ language }}
       </b-button>
     </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleOutputLanguageGrid">
+    <div class="optionArrow iconButton" @click="toggleRequestOutputLanguageGrid">
       <b-icon-caret-up-fill v-if="showOutputLanguageGrid"></b-icon-caret-up-fill>
       <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
     </div>
@@ -85,7 +85,8 @@
         v-for="(language, index) in languageList"
         :key="index"
         class="grid-item"
-        @click="toggleOutputLanguageGrid"
+        :class="{ 'gridSelected': selectedOutputLanguage === language }"
+        @click="addToDisplayedOutputLanguages(language)"
       >
         {{ language }}
       </div>
@@ -150,9 +151,13 @@ export default {
       selectedInputLanguage: languageList[2],
       selectedOutputLanguage: languageList[3],
       inputText: "",
-      outputText: ""
+      outputText: "",
+      clicks:0,
+      requestInputGrid:false,
+      requestOutputGrid:false
     };
   },
+
   methods: {
     toggleSlider() {
       this.docSettingOn = !this.docSettingOn;
@@ -169,19 +174,63 @@ export default {
     selectOutputLanguage(language) {
       this.selectedOutputLanguage = language;
     },
+    toggleRequestInputLanguageGrid(){
+      this.requestInputGrid = !this.requestInputGrid;
+    },    
+    toggleRequestOutputLanguageGrid(){
+      this.requestOutputGrid = !this.requestOutputGrid;
+    },
     swapLanguages(){
       [ this.selectedOutputLanguage, this.selectedInputLanguage ] = [ this.selectedInputLanguage, this.selectedOutputLanguage ];
+      this.updateLangDisplayList(this.displayedOutputLangList, this.selectedOutputLanguage);
+      this.updateLangDisplayList(this.displayedInputLangList, this.selectedInputLanguage);
       [ this.inputText, this.outputText ] = [ this.outputText, this.inputText ];
     },
     addToDisplayedInputLanguages(language) {
-      if (!this.displayedInputLangList.includes(language)) {
-        this.displayedInputLangList.unshift(language);
-        this.displayedInputLangList.pop();
-      };
+      this.updateLangDisplayList(this.displayedInputLangList, language)
       this.selectInputLanguage(language);
-      this.toggleInputLanguageGrid();
+      // this.toggleInputLanguageGrid();
+    },
+    addToDisplayedOutputLanguages(language) {
+      this.updateLangDisplayList(this.displayedOutputLangList, language)
+      this.selectOutputLanguage(language);
+      // this.toggleOutputLanguageGrid();
+    },
+    updateLangDisplayList(langList, lang){
+      if (!langList.includes(lang)) {
+        langList.unshift(lang);
+        langList.pop();
+      };
+    },
+        // Handle document click event
+    handleDocumentClick(event) {
+      this.clicks += 1;
+      if(this.requestInputGrid){
+        this.toggleInputLanguageGrid();
+        this.toggleRequestInputLanguageGrid();
+      } else if (this.showInputLanguageGrid) {
+        this.toggleInputLanguageGrid();
+      }
+
+      if(this.requestOutputGrid){
+        this.toggleOutputLanguageGrid();
+        this.toggleRequestOutputLanguageGrid();
+      } else if (this.showOutputLanguageGrid) {
+        this.toggleOutputLanguageGrid();
+      }
     },
   },
+
+  mounted() {
+    // Add a click event listener to the document
+    document.addEventListener('click', this.handleDocumentClick);
+  },
+
+  beforeUnmount() {
+    // Remove the click event listener when the component is destroyed
+    document.removeEventListener('click', this.handleDocumentClick);
+  },
+
 };
 </script>
 
