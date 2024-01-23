@@ -102,26 +102,14 @@
   <div />
   <div><b-button id="translate"  @click="translate()">translate</b-button></div>
   <div>
-    <div v-if="showSettingsCard" class="settings-card">
-      <div class="card-content">
-        <h2>Settings</h2>
-        <p>This is the settings card</p>
-        <p>ideas for settings</p>
-        <ul>dark theme</ul>
-        <ul>language option settings</ul>
-        <ul>which translator to use</ul>
-        <ul>in doc translation, what output? (file or text)</ul>
-
-      </div>
-      <div class="card-close" @click="showSettingsCard = false">
-        <b-icon-x></b-icon-x>
-      </div>
-    </div>
+    <SettingsCard v-if="showSettingsCard" class="settings-card" @close="showSettingsCard = !showSettingsCard"/>
   </div>
 
 </template>
 
 <script>
+
+import SettingsCard from "@/components/SettingsCard.vue";
 
 export default {
   data() {
@@ -145,7 +133,9 @@ export default {
       requestOutputGrid:false
     };
   },
-
+  components: {
+    SettingsCard,
+  },
   methods: {
     async getLanguageList() {
       const url = 'http://127.0.0.1:5000/languages';
@@ -206,10 +196,14 @@ export default {
       this.requestOutputGrid = !this.requestOutputGrid;
     },
     swapLanguages(){
-      [ this.selectedOutputLanguage, this.selectedInputLanguage ] = [ this.selectedInputLanguage, this.selectedOutputLanguage ];
-      this.updateLangDisplayList(this.displayedOutputLangList, this.selectedOutputLanguage);
-      this.updateLangDisplayList(this.displayedInputLangList, this.selectedInputLanguage);
-      [ this.inputText, this.outputText ] = [ this.outputText, this.inputText ];
+      if (this.inputLanguageKeys.includes(this.selectedOutputLanguage) && this.outputLanguageKeys.includes(this.selectedInputLanguage) ){
+        [ this.selectedOutputLanguage, this.selectedInputLanguage ] = [ this.selectedInputLanguage, this.selectedOutputLanguage ];
+        this.updateLangDisplayList(this.displayedOutputLangList, this.selectedOutputLanguage);
+        this.updateLangDisplayList(this.displayedInputLangList, this.selectedInputLanguage);
+        [ this.inputText, this.outputText ] = [ this.outputText, this.inputText ];
+      } else {
+        alert("One of the selected languages cannot be used as either the input or output language.")
+      }
     },
     addToDisplayedInputLanguages(language) {
       this.updateLangDisplayList(this.displayedInputLangList, language)
