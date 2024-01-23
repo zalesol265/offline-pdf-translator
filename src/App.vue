@@ -27,12 +27,12 @@
   <div>
     <b-button-group class="langInput">
       <b-button
-        v-for="(language, index) in displayedInputLangList"
-        :key="index"
-        :class="{ 'selected': selectedInputLanguage === language }"
-        @click="selectInputLanguage(language)"
+        v-for="(key) in displayedInputLangList"
+        :key="key"
+        :class="{ 'selected': selectedInputLanguage === key }"
+        @click="selectInputLanguage(key)"
       >
-        {{ language }}
+        {{ inputLanguageDictionary[key] }}
       </b-button>
     </b-button-group>
     <div class="optionArrow iconButton" @click="toggleRequestInputLanguageGrid">
@@ -46,12 +46,12 @@
   <div>
     <b-button-group class="langInput">
       <b-button
-        v-for="(language, index) in displayedOutputLangList"
-        :key="index"
-        :class="{ 'selected': selectedOutputLanguage === language }"
-        @click="selectOutputLanguage(language)"
+        v-for="(key) in displayedOutputLangList"
+        :key="key"
+        :class="{ 'selected': selectedOutputLanguage === key }"
+        @click="selectOutputLanguage(key)"
       >
-        {{ language }}
+        {{ outputLanguageDictionary[key] }}
       </b-button>
     </b-button-group>
     <div class="optionArrow iconButton" @click="toggleRequestOutputLanguageGrid">
@@ -62,13 +62,13 @@
   <div>
     <div v-if="showInputLanguageGrid" class="grid-container">
       <div
-        v-for="(language, index) in languageList"
-        :key="index"
+        v-for="(key) in inputLanguageKeys"
+        :key="key"
         class="grid-item"
-        :class="{ 'gridSelected': selectedInputLanguage === language }"
-        @click="addToDisplayedInputLanguages(language)"
+        :class="{ 'gridSelected': selectedInputLanguage === inputLanguageDictionary[key] }"
+        @click="addToDisplayedInputLanguages(key)"
       >
-        {{ language }}
+        {{ inputLanguageDictionary[key] }}
       </div>
     </div>
     <b-form-textarea
@@ -82,13 +82,13 @@
   <div>
     <div v-if="showOutputLanguageGrid" class="grid-container">
       <div
-        v-for="(language, index) in languageList"
-        :key="index"
+        v-for="(key) in outputLanguageKeys"
+        :key="key"
         class="grid-item"
-        :class="{ 'gridSelected': selectedOutputLanguage === language }"
-        @click="addToDisplayedOutputLanguages(language)"
+        :class="{ 'gridSelected': selectedOutputLanguage === outputLanguageDictionary.key }"
+        @click="addToDisplayedOutputLanguages(key)"
       >
-        {{ language }}
+        {{ outputLanguageDictionary[key] }}
       </div>
     </div>
     <b-form-textarea
@@ -100,7 +100,7 @@
     ></b-form-textarea>
   </div>
   <div />
-  <div><b-button id="translate">translate</b-button></div>
+  <div><b-button id="translate"  @click="translate()">translate</b-button></div>
   <div>
     <div v-if="showSettingsCard" class="settings-card">
       <div class="card-content">
@@ -118,25 +118,10 @@
       </div>
     </div>
   </div>
+
 </template>
 
-
 <script>
-const languageList = [
-  "Arabic",
-  "Chinese",
-  "English",
-  "French",
-  "German",
-  "Hindi",
-  "Italian",
-  "Japanese",
-  "Polish",
-  "Portuguese",
-  "Turkish",
-  "Russian",
-  "Spanish",
-];
 
 export default {
   data() {
@@ -145,11 +130,14 @@ export default {
       showInputLanguageGrid: false,
       showOutputLanguageGrid: false,
       showSettingsCard: false,
-      languageList,
-      displayedInputLangList: languageList.slice(2, 5),
-      displayedOutputLangList: languageList.slice(2, 5),
-      selectedInputLanguage: languageList[2],
-      selectedOutputLanguage: languageList[3],
+      inputLanguageDictionary:{},
+      outputLanguageDictionary:{},
+      inputLanguageKeys:[],
+      outputLanguageKeys:[],
+      displayedInputLangList:[],
+      displayedOutputLangList: [],
+      selectedInputLanguage: "",
+      selectedOutputLanguage: "",
       inputText: "",
       outputText: "",
       clicks:0,
@@ -159,6 +147,43 @@ export default {
   },
 
   methods: {
+    async getLanguageList() {
+      const url = 'http://127.0.0.1:5000/languages';
+
+
+    },
+    async translate() {
+      // alert("Translating!");
+      // const args = ['translate', this.inputText, "en", "es"];
+      // const command = window.__TAURI__.shell.Command.sidecar("bin/python/test", args);
+      // const output = await command.execute();
+      // const { stdout, stderr } = output;
+      // alert(stdout);
+      // this.outputText = stdout;
+      // // Parse the JSON output
+      // const jsonOutput = JSON.parse(stdout);
+
+      // // Access individual pieces of information
+      // this.outputText = jsonOutput.greeting;
+
+      const url = 'http://127.0.0.1:5000/translate';
+      const data = {
+        text: this.inputText,
+        input_lang: this.selectedInputLanguage,
+        output_lang: this.selectedOutputLanguage
+      };
+
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+      const responseData = await response.json();
+      this.outputText = responseData;
+
+    },
     toggleSlider() {
       this.docSettingOn = !this.docSettingOn;
     },
@@ -219,11 +244,31 @@ export default {
         this.toggleOutputLanguageGrid();
       }
     },
+    setLanguageOptions(){
+      fetch('http://127.0.0.1:5000/installed')
+      .then(response => response.json())
+      .then(data => {
+        // data = json.dumps(data._getvalue());
+        this.inputLanguageDictionary = data['input'];
+        console.log(Object.keys(this.inputLanguageDictionary));
+        this.outputLanguageDictionary = data['output'];
+        this.inputLanguageKeys = JSON.parse(JSON.stringify(Object.keys(data['input'])));
+        this.outputLanguageKeys = JSON.parse(JSON.stringify(Object.keys(data['output'])));
+        this.displayedInputLangList = this.inputLanguageKeys;//.slice(2, 5);
+        this.displayedOutputLangList = this.outputLanguageKeys.slice(2, 5);
+        this.selectedInputLanguage = this.inputLanguageKeys[0];
+        this.selectedOutputLanguage = this.outputLanguageKeys[3];
+      })
+      .catch(error => {
+        console.error('Error fetching languages:', error);
+      });
+    }
   },
 
   mounted() {
     // Add a click event listener to the document
     document.addEventListener('click', this.handleDocumentClick);
+    this.setLanguageOptions();
   },
 
   beforeUnmount() {
