@@ -1,115 +1,78 @@
 <template>
   <!-- <b-icon-gear-fill></b-icon-gear-fill> -->
-  <div>
-    <div id="sliderBox">
-      <div id="slider" :class="{ 'slider-open': docSettingOn }" @click="toggleSlider">
-        <div style="line-height: 2">
-          <b-icon-file-earmark v-if="docSettingOn"></b-icon-file-earmark>
-          <b-icon-fonts v-else></b-icon-fonts>
-          {{ docSettingOn ? "File" : "Text" }}
-        </div>
-      </div>
-      <div>
-        <b-icon-fonts></b-icon-fonts>
-        Text
-      </div>
-      <div>
-        <b-icon-file-earmark></b-icon-file-earmark>
-        File
-      </div>
-    </div>
-  </div>
-  <div>
+  <div class="flex-space">
+    <SliderBox :docSettingOn="docSettingOn" @toggleSlider="toggleSlider" />
     <div class="iconButton" id="settingsIcon" @click="showSettingsCard = true">
       <b-icon-gear-fill></b-icon-gear-fill>
     </div>
   </div>
-  <div>
-    <b-button-group class="langInput">
-      <b-button
-        v-for="(key) in displayedInputLangList"
-        :key="key"
-        :class="{ 'selected': selectedInputLanguage === key }"
-        @click="selectInputLanguage(key)"
-      >
-        {{ inputLanguageDictionary[key] }}
-      </b-button>
-    </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleRequestInputLanguageGrid">
-      <b-icon-caret-up-fill v-if="showInputLanguageGrid"></b-icon-caret-up-fill>
-      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
-    </div>
+  <div class="flex-space">
+    <LanguageSelection
+      :displayedLangList="displayedInputLangList"
+      :selectedLanguage="selectedInputLanguage"
+      :languageDictionary="inputLanguageDictionary"
+      :showLanguageGrid="showInputLanguageGrid"
+      @selectLanguage="selectInputLanguage"
+      @toggleLanguageGrid="toggleRequestInputLanguageGrid"
+    />
     <div class="iconButton swapLangBtn" @click="swapLanguages">
       <b-icon-arrow-left-right></b-icon-arrow-left-right>
     </div>
+    <LanguageSelection
+      :displayedLangList="displayedOutputLangList"
+      :selectedLanguage="selectedOutputLanguage"
+      :languageDictionary="outputLanguageDictionary"
+      :showLanguageGrid="showOutputLanguageGrid"
+      @selectLanguage="selectOutputLanguage"
+      @toggleLanguageGrid="toggleRequestOutputLanguageGrid"
+    />
   </div>
-  <div>
-    <b-button-group class="langInput">
-      <b-button
-        v-for="(key) in displayedOutputLangList"
-        :key="key"
-        :class="{ 'selected': selectedOutputLanguage === key }"
-        @click="selectOutputLanguage(key)"
-      >
-        {{ outputLanguageDictionary[key] }}
-      </b-button>
-    </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleRequestOutputLanguageGrid">
-      <b-icon-caret-up-fill v-if="showOutputLanguageGrid"></b-icon-caret-up-fill>
-      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
+  <div id="text-input">
+    <div>
+      <LanguageGrid
+        :showGrid="showInputLanguageGrid"
+        :languageList="inputLanguageKeys"
+        :selectedLanguage="selectedInputLanguage"
+        :languageDictionary="inputLanguageDictionary"
+        @add-language="addToDisplayedInputLanguages"
+      />
+      <b-form-textarea
+        class="textarea"
+        v-model="inputText"
+        placeholder="Enter something..."
+        rows="3"
+        max-rows="6"
+      ></b-form-textarea>
+    </div>
+    <div>
+      <LanguageGrid
+        :showGrid="showOutputLanguageGrid"
+        :languageList="outputLanguageKeys"
+        :selectedLanguage="selectedOutputLanguage"
+        :languageDictionary="outputLanguageDictionary"
+        @add-language="addToDisplayedOutputLanguages"
+      />
+      <b-form-textarea
+        class="textarea"
+        id="outputtext"
+        v-model="outputText"
+        rows="3"
+        max-rows="6"
+      ></b-form-textarea>
     </div>
   </div>
-  <div>
-    <div v-if="showInputLanguageGrid" class="grid-container">
-      <div
-        v-for="(key) in inputLanguageKeys"
-        :key="key"
-        class="grid-item"
-        :class="{ 'gridSelected': selectedInputLanguage === inputLanguageDictionary[key] }"
-        @click="addToDisplayedInputLanguages(key)"
-      >
-        {{ inputLanguageDictionary[key] }}
-      </div>
-    </div>
-    <b-form-textarea
-      class="textarea"
-      v-model="inputText"
-      placeholder="Enter something..."
-      rows="3"
-      max-rows="6"
-    ></b-form-textarea>
-  </div>
-  <div>
-    <div v-if="showOutputLanguageGrid" class="grid-container">
-      <div
-        v-for="(key) in outputLanguageKeys"
-        :key="key"
-        class="grid-item"
-        :class="{ 'gridSelected': selectedOutputLanguage === outputLanguageDictionary.key }"
-        @click="addToDisplayedOutputLanguages(key)"
-      >
-        {{ outputLanguageDictionary[key] }}
-      </div>
-    </div>
-    <b-form-textarea
-      class="textarea"
-      id="outputtext"
-      v-model="outputText"
-      rows="3"
-      max-rows="6"
-    ></b-form-textarea>
-  </div>
-  <div />
   <div><b-button id="translate"  @click="translate()">translate</b-button></div>
   <div>
     <SettingsCard v-if="showSettingsCard" class="settings-card" @close="showSettingsCard = !showSettingsCard"/>
   </div>
-
 </template>
 
 <script>
 
 import SettingsCard from "@/components/SettingsCard.vue";
+import LanguageGrid from './components/LanguageGrid.vue';
+import LanguageSelection from './components/LanguageSelection.vue';
+import SliderBox from './components/SliderBox.vue';
 
 export default {
   data() {
@@ -130,11 +93,17 @@ export default {
       outputText: "",
       clicks:0,
       requestInputGrid:false,
-      requestOutputGrid:false
+      requestOutputGrid:false,
+      prevWindowWidth:null,
+      topSelectedInputLangs:[],
+      topSelectedOutputLangs:[]
     };
   },
   components: {
     SettingsCard,
+    LanguageGrid,
+    LanguageSelection,
+    SliderBox,
   },
   methods: {
     async getLanguageList() {
@@ -143,19 +112,6 @@ export default {
 
     },
     async translate() {
-      // alert("Translating!");
-      // const args = ['translate', this.inputText, "en", "es"];
-      // const command = window.__TAURI__.shell.Command.sidecar("bin/python/test", args);
-      // const output = await command.execute();
-      // const { stdout, stderr } = output;
-      // alert(stdout);
-      // this.outputText = stdout;
-      // // Parse the JSON output
-      // const jsonOutput = JSON.parse(stdout);
-
-      // // Access individual pieces of information
-      // this.outputText = jsonOutput.greeting;
-
       const url = 'http://127.0.0.1:5000/translate';
       const data = {
         text: this.inputText,
@@ -198,30 +154,35 @@ export default {
     swapLanguages(){
       if (this.inputLanguageKeys.includes(this.selectedOutputLanguage) && this.outputLanguageKeys.includes(this.selectedInputLanguage) ){
         [ this.selectedOutputLanguage, this.selectedInputLanguage ] = [ this.selectedInputLanguage, this.selectedOutputLanguage ];
-        this.updateLangDisplayList(this.displayedOutputLangList, this.selectedOutputLanguage);
-        this.updateLangDisplayList(this.displayedInputLangList, this.selectedInputLanguage);
+        this.updateLangDisplayList(this.displayedOutputLangList, this.selectedOutputLanguage, this.topSelectedOutputLangs);
+        this.updateLangDisplayList(this.displayedInputLangList, this.selectedInputLanguage, this.topSelectedInputLangs);
         [ this.inputText, this.outputText ] = [ this.outputText, this.inputText ];
       } else {
         alert("One of the selected languages cannot be used as either the input or output language.")
       }
     },
     addToDisplayedInputLanguages(language) {
-      this.updateLangDisplayList(this.displayedInputLangList, language)
+      this.updateLangDisplayList(this.displayedInputLangList, language, this.topSelectedInputLangs)
       this.selectInputLanguage(language);
-      // this.toggleInputLanguageGrid();
     },
     addToDisplayedOutputLanguages(language) {
-      this.updateLangDisplayList(this.displayedOutputLangList, language)
+      this.updateLangDisplayList(this.displayedOutputLangList, language, this.topSelectedOutputLangs)
       this.selectOutputLanguage(language);
-      // this.toggleOutputLanguageGrid();
     },
-    updateLangDisplayList(langList, lang){
-      if (!langList.includes(lang)) {
-        langList.unshift(lang);
-        langList.pop();
+    updateLangDisplayList(displayedList, lang, topLangsList){
+      if (!displayedList.includes(lang)) {
+        displayedList.unshift(lang);
+        displayedList.pop();
       };
+
+      if (window.innerWidth < 1024) {
+        if (!topLangsList.includes(lang)) {
+          topLangsList.unshift(lang);
+          topLangsList.pop();
+        };
+      }
     },
-        // Handle document click event
+
     handleDocumentClick(event) {
       this.clicks += 1;
       if(this.requestInputGrid){
@@ -237,69 +198,60 @@ export default {
       } else if (this.showOutputLanguageGrid) {
         this.toggleOutputLanguageGrid();
       }
+
     },
     setLanguageOptions(){
       fetch('http://127.0.0.1:5000/installed')
       .then(response => response.json())
       .then(data => {
-        // data = json.dumps(data._getvalue());
+        // Set list of available language keys, and provide dictionary to lookup names
         this.inputLanguageDictionary = data['input'];
-        console.log(Object.keys(this.inputLanguageDictionary));
         this.outputLanguageDictionary = data['output'];
         this.inputLanguageKeys = JSON.parse(JSON.stringify(Object.keys(data['input'])));
         this.outputLanguageKeys = JSON.parse(JSON.stringify(Object.keys(data['output'])));
-        this.displayedInputLangList = this.inputLanguageKeys;//.slice(2, 5);
-        this.displayedOutputLangList = this.outputLanguageKeys.slice(2, 5);
+
+        // Initialize language selection history and the default languages used for translation
+        this.topSelectedInputLangs = this.inputLanguageKeys;
+        this.topSelectedOutputLangs = this.outputLanguageKeys.slice(0, 3);
         this.selectedInputLanguage = this.inputLanguageKeys[0];
-        this.selectedOutputLanguage = this.outputLanguageKeys[3];
+        this.selectedOutputLanguage = this.outputLanguageKeys[0];
+
+        // Change how many options can be shown based on screen width (wide: 3 langs, narrow: 1 lang)
+        if(window.innerWidth >= 1024){
+          this.displayedInputLangList = this.inputLanguageKeys;
+          this.displayedOutputLangList = this.outputLanguageKeys.slice(0, 3);
+        } else {
+          this.displayedInputLangList = this.inputLanguageKeys.slice(0, 1);
+          this.displayedOutputLangList = this.outputLanguageKeys.slice(0, 1);
+        }
       })
       .catch(error => {
         console.error('Error fetching languages:', error);
       });
+    },
+    changeDisplayedLanguageListLength(){
+      if (this.prevWindowWidth < 1024 && window.innerWidth >= 1024) {
+        this.displayedInputLangList = this.topSelectedInputLangs;
+        this.displayedOutputLangList = this.topSelectedOutputLangs;
+      } else if (this.prevWindowWidth >= 1024 && window.innerWidth < 1024){
+        this.displayedInputLangList = [this.selectedInputLanguage];
+        this.displayedOutputLangList = [this.selectedOutputLanguage];
+      }
+      this.prevWindowWidth = window.innerWidth;
     }
   },
 
   mounted() {
-    // Add a click event listener to the document
+    this.prevWindowWidth = window.innerWidth;
     document.addEventListener('click', this.handleDocumentClick);
+    window.addEventListener('resize', this.changeDisplayedLanguageListLength);
     this.setLanguageOptions();
   },
 
   beforeUnmount() {
-    // Remove the click event listener when the component is destroyed
     document.removeEventListener('click', this.handleDocumentClick);
+    window.removeEventListener('resize', this.changeDisplayedLanguageListLength);
   },
 
 };
 </script>
-
-<style scoped>
-
-
-#slider {
-  transition: transform 0.3s ease-in-out;
-}
-
-.slider-open {
-  transform: translateX(100%); /* Set your desired distance */
-}
-</style>
-
-<style scoped>
-/* Your styles here */
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #ffe21c);
-}
-
-select,
-input,
-textarea {
-  margin: 10px;
-  width: 500px;
-}
-
-button {
-  margin: 10px;
-  width: 200px;
-}
-</style>
