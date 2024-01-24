@@ -5,6 +5,7 @@
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  width: 100%;
 }
 
 a,
@@ -19,14 +20,14 @@ a,
   #outputLangGrid {
     right:20px;
   }
+
+  #app {
+    max-width: 1280px;
+  }
 }
 
 @media (min-width: 1024px) {
 
-  /* #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  } */
   #text-input{
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -36,10 +37,6 @@ a,
     margin:0px 2px 2px 2px!important;
   }
   
-  .langInput{
-    margin: 0px 0px 0px 8px!important;
-  } 
-  
   .swapLangBtn{
     float:right; 
     margin-right:-50px;
@@ -47,7 +44,15 @@ a,
   }
 
   .lang-settings{
-    width:480px;
+    /* width:480px; */
+    width:48%;
+  }
+
+  select,
+  input,
+  textarea {
+    width: 50%;
+    max-width:600px;
   }
 
 }
@@ -57,6 +62,7 @@ a,
   border-radius: 0px;
   margin:5px;
   float:left;
+  margin: 0px 0px 0px 8px!important;
 } 
 
 .langInput > .btn{
@@ -79,7 +85,7 @@ a,
 }
 
 .textarea{
-  margin:5px;
+  margin-bottom:5px;
   min-height:200px!important;
   overflow-y: auto!important;
 }
@@ -118,8 +124,7 @@ body {
   margin-bottom: 40px;
 }
 
-#sliderBox>div{
-  /* display: flex; */
+#sliderBox>div {
   text-align:center;
 	align-items: center;
   line-height:2.7;
@@ -145,11 +150,11 @@ body {
   float:left
 }
 
-#settingsIcon{
+#settingsIcon {
   float:right;
 }
 
-.iconButton{
+.iconButton {
   color:rgb(113, 113, 113);
   border-radius: 18px;
   height:35px;
@@ -160,7 +165,7 @@ body {
   cursor: pointer;
 }
 
-.iconButton:hover{
+.iconButton:hover {
   background-color: rgb(232, 232, 232);
 }
 
@@ -185,14 +190,8 @@ body {
   cursor: pointer;
 }
 
-.grid-item:hover{
+.grid-item:hover {
   background-color:rgb(233, 233, 233)
-}
-
-.swapLangBtn{
-  /* float:right; 
-  margin-right:-20px;
-  font-weight: bold; */
 }
 
 .settings-card {
@@ -247,7 +246,6 @@ select,
 input,
 textarea {
   margin: 10px;
-  width: 500px!important;
 }
 
 .flex-space {

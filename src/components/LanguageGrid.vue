@@ -40,7 +40,7 @@ export default {
     z-index: 100; 
     display: flex;
     flex-wrap: wrap;
-    margin-top: 45px;
+    margin-top: 50px;
   }
 
   .grid-item {
