@@ -1,6 +1,6 @@
 
 <template>
-  <div class="lang-settings">
+  <div>
     <b-button-group class="langInput">
       <b-button
         v-for="key in displayedLangList"
