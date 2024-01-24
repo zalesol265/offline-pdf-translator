@@ -15,9 +15,17 @@
       @selectLanguage="selectInputLanguage"
       @toggleLanguageGrid="toggleRequestInputLanguageGrid"
     />
+      <LanguageGrid
+        :showGrid="showInputLanguageGrid"
+        :languageList="inputLanguageKeys"
+        :selectedLanguage="selectedInputLanguage"
+        :languageDictionary="inputLanguageDictionary"
+        @add-language="addToDisplayedInputLanguages"
+      />
     <div class="iconButton swapLangBtn" @click="swapLanguages">
       <b-icon-arrow-left-right></b-icon-arrow-left-right>
     </div>
+    <div>
     <LanguageSelection
       :displayedLangList="displayedOutputLangList"
       :selectedLanguage="selectedOutputLanguage"
@@ -26,16 +34,18 @@
       @selectLanguage="selectOutputLanguage"
       @toggleLanguageGrid="toggleRequestOutputLanguageGrid"
     />
+      <LanguageGrid
+        id="outputLangGrid"
+        :showGrid="showOutputLanguageGrid"
+        :languageList="outputLanguageKeys"
+        :selectedLanguage="selectedOutputLanguage"
+        :languageDictionary="outputLanguageDictionary"
+        @add-language="addToDisplayedOutputLanguages"
+      />
+      </div>
   </div>
   <div id="text-input">
     <div>
-      <LanguageGrid
-        :showGrid="showInputLanguageGrid"
-        :languageList="inputLanguageKeys"
-        :selectedLanguage="selectedInputLanguage"
-        :languageDictionary="inputLanguageDictionary"
-        @add-language="addToDisplayedInputLanguages"
-      />
       <b-form-textarea
         class="textarea"
         v-model="inputText"
@@ -45,13 +55,6 @@
       ></b-form-textarea>
     </div>
     <div>
-      <LanguageGrid
-        :showGrid="showOutputLanguageGrid"
-        :languageList="outputLanguageKeys"
-        :selectedLanguage="selectedOutputLanguage"
-        :languageDictionary="outputLanguageDictionary"
-        @add-language="addToDisplayedOutputLanguages"
-      />
       <b-form-textarea
         class="textarea"
         id="outputtext"
