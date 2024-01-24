@@ -1,7 +1,7 @@
 <template>
   <!-- <b-icon-gear-fill></b-icon-gear-fill> -->
   <div>
-    <div id="sliderBox">
+    <!-- <div id="sliderBox">
       <div id="slider" :class="{ 'slider-open': docSettingOn }" @click="toggleSlider">
         <div style="line-height: 2">
           <b-icon-file-earmark v-if="docSettingOn"></b-icon-file-earmark>
@@ -17,7 +17,9 @@
         <b-icon-file-earmark></b-icon-file-earmark>
         File
       </div>
-    </div>
+    </div> -->
+    <SliderBox :docSettingOn="docSettingOn" @toggleSlider="toggleSlider" />
+
   </div>
   <div>
     <div class="iconButton" id="settingsIcon" @click="showSettingsCard = true">
@@ -25,52 +27,36 @@
     </div>
   </div>
   <div>
-    <b-button-group class="langInput">
-      <b-button
-        v-for="(key) in displayedInputLangList"
-        :key="key"
-        :class="{ 'selected': selectedInputLanguage === key }"
-        @click="selectInputLanguage(key)"
-      >
-        {{ inputLanguageDictionary[key] }}
-      </b-button>
-    </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleRequestInputLanguageGrid">
-      <b-icon-caret-up-fill v-if="showInputLanguageGrid"></b-icon-caret-up-fill>
-      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
-    </div>
+    <LanguageSelection
+      :displayedLangList="displayedInputLangList"
+      :selectedLanguage="selectedInputLanguage"
+      :languageDictionary="inputLanguageDictionary"
+      :showLanguageGrid="showInputLanguageGrid"
+      @selectLanguage="selectInputLanguage"
+      @toggleLanguageGrid="toggleRequestInputLanguageGrid"
+    />
     <div class="iconButton swapLangBtn" @click="swapLanguages">
       <b-icon-arrow-left-right></b-icon-arrow-left-right>
     </div>
   </div>
   <div>
-    <b-button-group class="langInput">
-      <b-button
-        v-for="(key) in displayedOutputLangList"
-        :key="key"
-        :class="{ 'selected': selectedOutputLanguage === key }"
-        @click="selectOutputLanguage(key)"
-      >
-        {{ outputLanguageDictionary[key] }}
-      </b-button>
-    </b-button-group>
-    <div class="optionArrow iconButton" @click="toggleRequestOutputLanguageGrid">
-      <b-icon-caret-up-fill v-if="showOutputLanguageGrid"></b-icon-caret-up-fill>
-      <b-icon-caret-down-fill v-else></b-icon-caret-down-fill>
-    </div>
+    <LanguageSelection
+      :displayedLangList="displayedOutputLangList"
+      :selectedLanguage="selectedOutputLanguage"
+      :languageDictionary="outputLanguageDictionary"
+      :showLanguageGrid="showOutputLanguageGrid"
+      @selectLanguage="selectOutputLanguage"
+      @toggleLanguageGrid="toggleRequestOutputLanguageGrid"
+    />
   </div>
   <div>
-    <div v-if="showInputLanguageGrid" class="grid-container">
-      <div
-        v-for="(key) in inputLanguageKeys"
-        :key="key"
-        class="grid-item"
-        :class="{ 'gridSelected': selectedInputLanguage === inputLanguageDictionary[key] }"
-        @click="addToDisplayedInputLanguages(key)"
-      >
-        {{ inputLanguageDictionary[key] }}
-      </div>
-    </div>
+    <LanguageGrid
+      :showGrid="showInputLanguageGrid"
+      :languageList="inputLanguageKeys"
+      :selectedLanguage="selectedInputLanguage"
+      :languageDictionary="inputLanguageDictionary"
+      @add-language="addToDisplayedInputLanguages"
+    />
     <b-form-textarea
       class="textarea"
       v-model="inputText"
@@ -80,17 +66,13 @@
     ></b-form-textarea>
   </div>
   <div>
-    <div v-if="showOutputLanguageGrid" class="grid-container">
-      <div
-        v-for="(key) in outputLanguageKeys"
-        :key="key"
-        class="grid-item"
-        :class="{ 'gridSelected': selectedOutputLanguage === outputLanguageDictionary.key }"
-        @click="addToDisplayedOutputLanguages(key)"
-      >
-        {{ outputLanguageDictionary[key] }}
-      </div>
-    </div>
+    <LanguageGrid
+      :showGrid="showOutputLanguageGrid"
+      :languageList="outputLanguageKeys"
+      :selectedLanguage="selectedOutputLanguage"
+      :languageDictionary="outputLanguageDictionary"
+      @add-language="addToDisplayedOutputLanguages"
+    />
     <b-form-textarea
       class="textarea"
       id="outputtext"
@@ -104,12 +86,14 @@
   <div>
     <SettingsCard v-if="showSettingsCard" class="settings-card" @close="showSettingsCard = !showSettingsCard"/>
   </div>
-
 </template>
 
 <script>
 
 import SettingsCard from "@/components/SettingsCard.vue";
+import LanguageGrid from './components/LanguageGrid.vue';
+import LanguageSelection from './components/LanguageSelection.vue';
+import SliderBox from './components/SliderBox.vue';
 
 export default {
   data() {
@@ -135,6 +119,9 @@ export default {
   },
   components: {
     SettingsCard,
+    LanguageGrid,
+    LanguageSelection,
+    SliderBox,
   },
   methods: {
     async getLanguageList() {
@@ -143,19 +130,6 @@ export default {
 
     },
     async translate() {
-      // alert("Translating!");
-      // const args = ['translate', this.inputText, "en", "es"];
-      // const command = window.__TAURI__.shell.Command.sidecar("bin/python/test", args);
-      // const output = await command.execute();
-      // const { stdout, stderr } = output;
-      // alert(stdout);
-      // this.outputText = stdout;
-      // // Parse the JSON output
-      // const jsonOutput = JSON.parse(stdout);
-
-      // // Access individual pieces of information
-      // this.outputText = jsonOutput.greeting;
-
       const url = 'http://127.0.0.1:5000/translate';
       const data = {
         text: this.inputText,
@@ -237,6 +211,7 @@ export default {
       } else if (this.showOutputLanguageGrid) {
         this.toggleOutputLanguageGrid();
       }
+
     },
     setLanguageOptions(){
       fetch('http://127.0.0.1:5000/installed')
@@ -272,34 +247,3 @@ export default {
 
 };
 </script>
-
-<style scoped>
-
-
-#slider {
-  transition: transform 0.3s ease-in-out;
-}
-
-.slider-open {
-  transform: translateX(100%); /* Set your desired distance */
-}
-</style>
-
-<style scoped>
-/* Your styles here */
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #ffe21c);
-}
-
-select,
-input,
-textarea {
-  margin: 10px;
-  width: 500px;
-}
-
-button {
-  margin: 10px;
-  width: 200px;
-}
-</style>

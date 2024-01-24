@@ -20,11 +20,9 @@ a,
   #app {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* padding: 0 2rem; */
   }
 
   .textarea{
-    /* border-radius: 0px 0px 10px 10px!important; */
     margin:0px 2px 2px 2px!important;
   }
   
@@ -147,22 +145,6 @@ body {
   background-color: rgb(232, 232, 232);
 }
 
-/* .grid-container {
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-
-  background-color: white;
-  padding:20px;
-  border:1px solid lightgrey;
-  border-radius:5px;
-
-}
-
-.grid-item {
-  padding: 3px 10px;
-  font-size: 15px;
-  cursor: pointer;
-} */
 
 .grid-container {
   position: absolute;
@@ -235,4 +217,16 @@ body {
 .gridSelected{
   color:blueviolet!important;
   background-color:rgb(245, 239, 248);
+}
+
+button {
+  margin: 10px;
+  width: 200px;
+}
+
+select,
+input,
+textarea {
+  margin: 10px;
+  width: 500px!important;
 }
