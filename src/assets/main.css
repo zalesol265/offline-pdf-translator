@@ -15,6 +15,12 @@ a,
   padding: 3px;
 }
 
+@media (max-width:1024px) {
+  #outputLangGrid {
+    right:20px;
+  }
+}
+
 @media (min-width: 1024px) {
 
   /* #app {
@@ -43,6 +49,7 @@ a,
   .lang-settings{
     width:480px;
   }
+
 }
 
 .langInput{
