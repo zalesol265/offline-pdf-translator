@@ -1,9 +1,9 @@
 
 <template>
-  <div>
+  <div class="lang-settings">
     <b-button-group class="langInput">
       <b-button
-        v-for="(key) in displayedLangList"
+        v-for="key in displayedLangList"
         :key="key"
         :class="{ 'selected': selectedLanguage === key }"
         @click="selectLanguage(key)"
@@ -38,5 +38,5 @@ export default {
 </script>
 
 <style scoped>
-/* Your styles here */
+
 </style>

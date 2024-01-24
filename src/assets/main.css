@@ -17,7 +17,11 @@ a,
 
 @media (min-width: 1024px) {
 
-  #app {
+  /* #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  } */
+  #text-input{
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
@@ -27,10 +31,18 @@ a,
   }
   
   .langInput{
-    margin: 0px 0px 0px 20px!important;
+    margin: 0px 0px 0px 8px!important;
   } 
   
+  .swapLangBtn{
+    float:right; 
+    margin-right:-50px;
+    font-weight: bold;
+  }
 
+  .lang-settings{
+    width:480px;
+  }
 }
 
 .langInput{
@@ -171,9 +183,9 @@ body {
 }
 
 .swapLangBtn{
-  float:right; 
+  /* float:right; 
   margin-right:-20px;
-  font-weight: bold;
+  font-weight: bold; */
 }
 
 .settings-card {
@@ -229,4 +241,9 @@ input,
 textarea {
   margin: 10px;
   width: 500px!important;
+}
+
+.flex-space {
+  display: flex;
+  justify-content: space-between;
 }
