@@ -45,7 +45,10 @@
       />
     </div>
   </div>
-  <div id="text-input">
+  <div v-if="docSettingOn">
+      <DropFile/>
+  </div>
+  <div v-else id="text-input">
     <div>
       <b-form-textarea
         class="textarea"
@@ -80,6 +83,7 @@ import SettingsCard from "@/components/SettingsCard.vue";
 import LanguageGrid from "./components/LanguageGrid.vue";
 import LanguageSelection from "./components/LanguageSelection.vue";
 import SliderBox from "./components/SliderBox.vue";
+import DropFile from './components/DropFile.vue';
 
 export default {
   data() {
@@ -111,6 +115,7 @@ export default {
     LanguageGrid,
     LanguageSelection,
     SliderBox,
+    DropFile
   },
   methods: {
     async getLanguageList() {
