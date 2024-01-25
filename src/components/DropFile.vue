@@ -45,10 +45,15 @@
       </div>
     </div>
   </div>
+  <p>{{selectedOutputLanguage}}</p>
 </template>
 
 <script>
 export default {
+  props: {
+    selectedInputLanguage: String,
+    selectedOutputLanguage: String,
+  },
   data() {
     return {
       isDragging: false,
@@ -108,6 +113,38 @@ export default {
       this.onChange();
       this.isDragging = false;
     },
+
+    async translateDocuments() {
+      if (this.files && this.files.length > 0) {
+        const url = "http://127.0.0.1:5000/documentTranslate";
+
+        // Create FormData object
+        const formData = new FormData();
+        formData.append("file", this.files[0]); // Assuming the first file in the list
+
+        // Add other data to the FormData object
+        formData.append("input_lang", this.selectedInputLanguage);
+        formData.append("output_lang", this.selectedOutputLanguage);
+
+        // Make a POST request to your backend endpoint
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            // Handle the response from the backend
+            const data = await response.json();
+            console.log(data);
+          } else {
+            console.error("Error:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error:", error.message);
+        }
+      }
+    },
   },
 };
 </script>
@@ -125,8 +162,8 @@ export default {
 #file-upload-icon {
   width: 77px;
   height: 77px;
-  color: rgb(233, 233, 233);
-  margin-bottom:20px;
+  color: rgb(185, 185, 185);
+  margin-bottom: 20px;
 }
 .file-tag {
   margin: 5px 8px;
@@ -151,7 +188,6 @@ button {
 }
 
 .main {
-  display: flex;
   flex-grow: 1;
   text-align: center;
   border: 1px solid rgb(210, 210, 210);
@@ -196,7 +232,7 @@ button {
     border-left: 1px solid rgb(206, 206, 206);
     min-width: 500px;
   }
-  
+
   .upload-container {
     width: 50%;
     float: left;
@@ -205,6 +241,7 @@ button {
   }
 
   .main {
+    display: flex;
     align-items: center;
     justify-content: center;
   }

@@ -46,7 +46,9 @@
     </div>
   </div>
   <div v-if="docSettingOn">
-      <DropFile/>
+      <DropFile ref="dropFileRef" 
+      :selectedInputLanguage="selectedInputLanguage" 
+      :selectedOutputLanguage="selectedOutputLanguage"/>
   </div>
   <div v-else id="text-input">
     <div>
@@ -108,6 +110,7 @@ export default {
       prevWindowWidth: null,
       topSelectedInputLangs: [],
       topSelectedOutputLangs: [],
+      documentList: [],
     };
   },
   components: {
@@ -122,22 +125,28 @@ export default {
       const url = "http://127.0.0.1:5000/languages";
     },
     async translate() {
-      const url = "http://127.0.0.1:5000/translate";
-      const data = {
-        text: this.inputText,
-        input_lang: this.selectedInputLanguage,
-        output_lang: this.selectedOutputLanguage,
-      };
+       
+      if (this.docSettingOn) { 
+        this.$refs.dropFileRef.translateDocuments();
+      } else {
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      const responseData = await response.json();
-      this.outputText = responseData;
+        const url = "http://127.0.0.1:5000/translate";
+        const data = {
+          text: this.inputText,
+          input_lang: this.selectedInputLanguage,
+          output_lang: this.selectedOutputLanguage,
+        };
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const responseData = await response.json();
+        this.outputText = responseData;
+      }
     },
     toggleSlider() {
       this.docSettingOn = !this.docSettingOn;
