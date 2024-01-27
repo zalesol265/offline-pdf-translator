@@ -27,8 +27,17 @@
         </label>
       </div>
       <div class="preview-container mt-4" v-if="files.length">
-        <div v-for="file in files" :key="file.name" class="preview-card">
-          <div class="file-tag">{{ getFileType(file.name) }}</div>
+        <!-- <div v-for="file in files" :key="file.name" class="preview-card"> -->
+        <FileBlock
+          v-for="file in files"
+          :key="file.name"
+          :file="file"
+          :input_lang="input_lang"
+          :output_lang="output_lang"
+          :triggerTranslation="triggerTranslation"
+          @remove-file="remove(files.indexOf(file))"
+        />
+        <!-- <div class="file-tag">{{ getFileType(file.name) }}</div>
           <p :title="file.name">
             {{ makeName(file.name) }}
           </p>
@@ -40,25 +49,31 @@
             >
               <b>&times;</b>
             </button>
-          </div>
-        </div>
+          </div> -->
+        <!-- </div> -->
       </div>
     </div>
   </div>
-  <p>{{selectedOutputLanguage}}</p>
 </template>
 
 <script>
+import FileBlock from './FileBlock.vue';
+// import { eventBus } from './eventBus.js';
+
 export default {
-  props: {
-    selectedInputLanguage: String,
-    selectedOutputLanguage: String,
-  },
+    props: {
+        input_lang: String,
+        output_lang: String,
+    },
   data() {
     return {
       isDragging: false,
       files: [],
+      triggerTranslation: false
     };
+  },
+  components:{
+    FileBlock
   },
   methods: {
     onChange() {
@@ -68,30 +83,6 @@ export default {
           !this.files.some((existingFile) => existingFile.name === newFile.name)
       );
       this.files = [...this.files, ...uniqueNewFiles];
-    },
-
-    generateThumbnail(file) {
-      let fileSrc = URL.createObjectURL(file);
-      setTimeout(() => {
-        URL.revokeObjectURL(fileSrc);
-      }, 1000);
-      return fileSrc;
-    },
-
-    getFileType(name) {
-      let fileType = name.split(".")[name.split(".").length - 1];
-      return fileType.toUpperCase();
-    },
-
-    makeName(name) {
-      if (name.length > 24) {
-        return (
-          name.split(".")[0].substring(0, 20) +
-          "..." +
-          name.split(".")[name.split(".").length - 1]
-        );
-      }
-      return name;
     },
 
     remove(i) {
@@ -114,37 +105,9 @@ export default {
       this.isDragging = false;
     },
 
-    async translateDocuments() {
-      if (this.files && this.files.length > 0) {
-        const url = "http://127.0.0.1:5000/documentTranslate";
-
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("file", this.files[0]); // Assuming the first file in the list
-
-        // Add other data to the FormData object
-        formData.append("input_lang", this.selectedInputLanguage);
-        formData.append("output_lang", this.selectedOutputLanguage);
-
-        // Make a POST request to your backend endpoint
-        try {
-          const response = await fetch(url, {
-            method: "POST",
-            body: formData,
-          });
-
-          if (response.ok) {
-            // Handle the response from the backend
-            const data = await response.json();
-            console.log(data);
-          } else {
-            console.error("Error:", response.statusText);
-          }
-        } catch (error) {
-          console.error("Error:", error.message);
-        }
-      }
-    },
+    translateDocuments(){
+        this.triggerTranslation = true;
+    }
   },
 };
 </script>

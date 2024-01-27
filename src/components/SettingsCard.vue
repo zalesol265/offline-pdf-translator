@@ -25,7 +25,10 @@
 
 <script>
 export default{
-  methods: {
+  methods: { 
+    async getLanguageList() {
+      const url = "http://127.0.0.1:5000/languages";
+    },
     closeSettingsCard() {
       this.$emit("close");
     },
@@ -65,4 +68,18 @@ export default{
   color: #fff;
   font-size: 20px;
 }
+
+.settings-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  z-index: 200; /* Ensure it appears above other elements */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>
