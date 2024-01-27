@@ -1,7 +1,9 @@
 <template>
-  <!-- <b-icon-gear-fill></b-icon-gear-fill> -->
   <div class="flex-space">
-    <SliderBox :docSettingOn="docSettingOn" @toggleSlider="toggleSlider" />
+    <SliderBox
+      :docSettingOn="docSettingOn"
+      @toggleSlider="docSettingOn = !docSettingOn"
+    />
     <div class="iconButton" id="settingsIcon" @click="showSettingsCard = true">
       <b-icon-gear-fill></b-icon-gear-fill>
     </div>
@@ -9,280 +11,122 @@
   <div class="flex-space">
     <LanguageSelection
       class="lang-settings"
-      :displayedLangList="displayedInputLangList"
-      :selectedLanguage="selectedInputLanguage"
-      :languageDictionary="inputLanguageDictionary"
-      :showLanguageGrid="showInputLanguageGrid"
-      @selectLanguage="selectInputLanguage"
-      @toggleLanguageGrid="toggleRequestInputLanguageGrid"
-    />
-    <LanguageGrid
-      :showGrid="showInputLanguageGrid"
-      :languageList="inputLanguageKeys"
-      :selectedLanguage="selectedInputLanguage"
-      :languageDictionary="inputLanguageDictionary"
-      @add-language="addToDisplayedInputLanguages"
+      ref="inputLangsRef"
+      @updateLanguage="updateInputLanguage"
     />
     <div class="iconButton swapLangBtn" @click="swapLanguages">
       <b-icon-arrow-left-right></b-icon-arrow-left-right>
     </div>
-    <div class="lang-settings">
-      <LanguageSelection
-        :displayedLangList="displayedOutputLangList"
-        :selectedLanguage="selectedOutputLanguage"
-        :languageDictionary="outputLanguageDictionary"
-        :showLanguageGrid="showOutputLanguageGrid"
-        @selectLanguage="selectOutputLanguage"
-        @toggleLanguageGrid="toggleRequestOutputLanguageGrid"
-      />
-      <LanguageGrid
-        id="outputLangGrid"
-        :showGrid="showOutputLanguageGrid"
-        :languageList="outputLanguageKeys"
-        :selectedLanguage="selectedOutputLanguage"
-        :languageDictionary="outputLanguageDictionary"
-        @add-language="addToDisplayedOutputLanguages"
-      />
-    </div>
-  </div>
-  <div v-if="docSettingOn">
-      <DropFile ref="dropFileRef" 
-      :selectedInputLanguage="selectedInputLanguage" 
-      :selectedOutputLanguage="selectedOutputLanguage"/>
-  </div>
-  <div v-else id="text-input">
-    <div>
-      <b-form-textarea
-        class="textarea"
-        v-model="inputText"
-        placeholder="Enter something..."
-        rows="3"
-        max-rows="6"
-      ></b-form-textarea>
-    </div>
-    <div>
-      <b-form-textarea
-        class="textarea"
-        id="outputtext"
-        v-model="outputText"
-        rows="3"
-        max-rows="6"
-      ></b-form-textarea>
-    </div>
-  </div>
-  <div><b-button id="translate" @click="translate()">translate</b-button></div>
-  <div>
-    <SettingsCard
-      v-if="showSettingsCard"
-      class="settings-card"
-      @close="showSettingsCard = !showSettingsCard"
+    <LanguageSelection
+      class="lang-settings"
+      ref="outputLangsRef"
+      @updateLanguage="updateOutputLanguage"
     />
   </div>
+  <DropFile
+    v-if="docSettingOn"
+    ref="dropFileRef"
+    :input_lang="inputLanguage"
+    :output_lang="outputLanguage"
+  />
+  
+  <TextAreas
+    v-else
+    id="text-input"
+    ref="textAreasRef"
+    :input_lang="inputLanguage"
+    :output_lang="outputLanguage"
+  />
+  <div><b-button id="translate" @click="translate()">translate</b-button></div>
+  <SettingsCard
+    v-if="showSettingsCard"
+    class="settings-card"
+    @close="showSettingsCard = !showSettingsCard"
+  />
 </template>
 
 <script>
 import SettingsCard from "@/components/SettingsCard.vue";
-import LanguageGrid from "./components/LanguageGrid.vue";
 import LanguageSelection from "./components/LanguageSelection.vue";
 import SliderBox from "./components/SliderBox.vue";
-import DropFile from './components/DropFile.vue';
+import DropFile from "./components/DropFile.vue";
+import TextAreas from "./components/TextAreas.vue";
 
 export default {
   data() {
     return {
       docSettingOn: false,
-      showInputLanguageGrid: false,
-      showOutputLanguageGrid: false,
       showSettingsCard: false,
-      inputLanguageDictionary: {},
-      outputLanguageDictionary: {},
-      inputLanguageKeys: [],
-      outputLanguageKeys: [],
-      displayedInputLangList: [],
-      displayedOutputLangList: [],
-      selectedInputLanguage: "",
-      selectedOutputLanguage: "",
-      inputText: "",
-      outputText: "",
       clicks: 0,
-      requestInputGrid: false,
-      requestOutputGrid: false,
       prevWindowWidth: null,
-      topSelectedInputLangs: [],
-      topSelectedOutputLangs: [],
-      documentList: [],
+      inputLanguage: "",
+      outputLanguage: ""
     };
   },
   components: {
     SettingsCard,
-    LanguageGrid,
     LanguageSelection,
     SliderBox,
-    DropFile
+    DropFile,
+    TextAreas,
   },
   methods: {
-    async getLanguageList() {
-      const url = "http://127.0.0.1:5000/languages";
-    },
     async translate() {
-       
-      if (this.docSettingOn) { 
+      if (this.docSettingOn) {
         this.$refs.dropFileRef.translateDocuments();
       } else {
-
-        const url = "http://127.0.0.1:5000/translate";
-        const data = {
-          text: this.inputText,
-          input_lang: this.selectedInputLanguage,
-          output_lang: this.selectedOutputLanguage,
-        };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
-        const responseData = await response.json();
-        this.outputText = responseData;
+        this.$refs.textAreasRef.translateText();
       }
     },
-    toggleSlider() {
-      this.docSettingOn = !this.docSettingOn;
-    },
-    toggleInputLanguageGrid() {
-      this.showInputLanguageGrid = !this.showInputLanguageGrid;
-    },
-    toggleOutputLanguageGrid() {
-      this.showOutputLanguageGrid = !this.showOutputLanguageGrid;
-    },
-    selectInputLanguage(language) {
-      this.selectedInputLanguage = language;
-    },
-    selectOutputLanguage(language) {
-      this.selectedOutputLanguage = language;
-    },
-    toggleRequestInputLanguageGrid() {
-      this.requestInputGrid = !this.requestInputGrid;
-    },
-    toggleRequestOutputLanguageGrid() {
-      this.requestOutputGrid = !this.requestOutputGrid;
-    },
     swapLanguages() {
+      let output_lang = this.$refs.outputLangsRef.selectedLanguage;
+      let input_lang = this.$refs.inputLangsRef.selectedLanguage;
+
+      let output_options = this.$refs.outputLangsRef.languageKeys;
+      let input_options = this.$refs.inputLangsRef.languageKeys;
+
       if (
-        this.inputLanguageKeys.includes(this.selectedOutputLanguage) &&
-        this.outputLanguageKeys.includes(this.selectedInputLanguage)
+        output_options.includes(input_lang) &&
+        input_options.includes(output_lang)
       ) {
-        [this.selectedOutputLanguage, this.selectedInputLanguage] = [
-          this.selectedInputLanguage,
-          this.selectedOutputLanguage,
-        ];
-        this.updateLangDisplayList(
-          this.displayedOutputLangList,
-          this.selectedOutputLanguage,
-          this.topSelectedOutputLangs
-        );
-        this.updateLangDisplayList(
-          this.displayedInputLangList,
-          this.selectedInputLanguage,
-          this.topSelectedInputLangs
-        );
-        [this.inputText, this.outputText] = [this.outputText, this.inputText];
+        this.$refs.inputLangsRef.selectLanguage(output_lang);
+        this.$refs.outputLangsRef.selectLanguage(input_lang);
+        this.$refs.textAreasRef.swapText();
       } else {
         alert(
           "One of the selected languages cannot be used as either the input or output language."
         );
       }
     },
-    addToDisplayedInputLanguages(language) {
-      this.updateLangDisplayList(
-        this.displayedInputLangList,
-        language,
-        this.topSelectedInputLangs
-      );
-      this.selectInputLanguage(language);
+    updateInputLanguage(language) {
+      this.inputLanguage = language;
     },
-    addToDisplayedOutputLanguages(language) {
-      this.updateLangDisplayList(
-        this.displayedOutputLangList,
-        language,
-        this.topSelectedOutputLangs
-      );
-      this.selectOutputLanguage(language);
+    updateOutputLanguage(language) {
+      this.outputLanguage = language;
     },
-    updateLangDisplayList(displayedList, lang, topLangsList) {
-      if (!displayedList.includes(lang)) {
-        displayedList.unshift(lang);
-        displayedList.pop();
-      }
-
-      if (window.innerWidth < 1024) {
-        if (!topLangsList.includes(lang)) {
-          topLangsList.unshift(lang);
-          topLangsList.pop();
-        }
-      }
-    },
-
     handleDocumentClick(event) {
       this.clicks += 1;
-      if (this.requestInputGrid) {
-        this.toggleInputLanguageGrid();
-        this.toggleRequestInputLanguageGrid();
-      } else if (this.showInputLanguageGrid) {
-        this.toggleInputLanguageGrid();
-      }
-
-      if (this.requestOutputGrid) {
-        this.toggleOutputLanguageGrid();
-        this.toggleRequestOutputLanguageGrid();
-      } else if (this.showOutputLanguageGrid) {
-        this.toggleOutputLanguageGrid();
-      }
+      this.$refs.inputLangsRef.checkGridVisibility();
+      this.$refs.outputLangsRef.checkGridVisibility();
     },
     setLanguageOptions() {
       fetch("http://127.0.0.1:5000/installed")
         .then((response) => response.json())
         .then((data) => {
-          // Set list of available language keys, and provide dictionary to lookup names
-          this.inputLanguageDictionary = data["input"];
-          this.outputLanguageDictionary = data["output"];
-          this.inputLanguageKeys = JSON.parse(
-            JSON.stringify(Object.keys(data["input"]))
-          );
-          this.outputLanguageKeys = JSON.parse(
-            JSON.stringify(Object.keys(data["output"]))
-          );
-
-          // Initialize language selection history and the default languages used for translation
-          this.topSelectedInputLangs = this.inputLanguageKeys;
-          this.topSelectedOutputLangs = this.outputLanguageKeys.slice(0, 3);
-          this.selectedInputLanguage = this.inputLanguageKeys[0];
-          this.selectedOutputLanguage = this.outputLanguageKeys[0];
-
-          // Change how many options can be shown based on screen width (wide: 3 langs, narrow: 1 lang)
-          if (window.innerWidth >= 1024) {
-            this.displayedInputLangList = this.inputLanguageKeys;
-            this.displayedOutputLangList = this.outputLanguageKeys.slice(0, 3);
-          } else {
-            this.displayedInputLangList = this.inputLanguageKeys.slice(0, 1);
-            this.displayedOutputLangList = this.outputLanguageKeys.slice(0, 1);
-          }
+          let inputLanguageDictionary = data["input"];
+          let outputLanguageDictionary = data["output"];
+          this.$refs.inputLangsRef.initializeLanguageSelection(inputLanguageDictionary);
+          this.$refs.outputLangsRef.initializeLanguageSelection(outputLanguageDictionary);
         })
         .catch((error) => {
           console.error("Error fetching languages:", error);
         });
     },
     changeDisplayedLanguageListLength() {
-      if (this.prevWindowWidth < 1024 && window.innerWidth >= 1024) {
-        this.displayedInputLangList = this.topSelectedInputLangs;
-        this.displayedOutputLangList = this.topSelectedOutputLangs;
-      } else if (this.prevWindowWidth >= 1024 && window.innerWidth < 1024) {
-        this.displayedInputLangList = [this.selectedInputLanguage];
-        this.displayedOutputLangList = [this.selectedOutputLanguage];
-      }
-      this.prevWindowWidth = window.innerWidth;
+      let curWindowWidth = window.innerWidth;
+      this.$refs.inputLangsRef.adjustNumDisplayedLanguages(this.prevWindowWidth, curWindowWidth);
+      this.$refs.outputLangsRef.adjustNumDisplayedLanguages(this.prevWindowWidth, curWindowWidth );
+      this.prevWindowWidth = curWindowWidth;
     },
   },
 
@@ -295,10 +139,7 @@ export default {
 
   beforeUnmount() {
     document.removeEventListener("click", this.handleDocumentClick);
-    window.removeEventListener(
-      "resize",
-      this.changeDisplayedLanguageListLength
-    );
+    window.removeEventListener("resize", this.changeDisplayedLanguageListLength);
   },
 };
 </script>

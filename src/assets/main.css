@@ -56,48 +56,6 @@ a,
 
 }
 
-.langInput{
-  /* width:400px; */
-  border-radius: 0px;
-  margin:5px;
-  float:left;
-  margin: 0px 0px 0px 8px!important;
-} 
-
-.langInput > .btn{
-  background-color:white;
-  color:rgb(113, 113, 113);
-  font-weight: 600;
-  font-size: 14px;
-  margin: 0px !important;
-  border:0px;
-  border-radius: 0px!important;
-  width:fit-content;
-  padding:8px 16px 14px 16px;
-}
-
-.langInput > .btn:hover{
-  background-color:rgb(245, 239, 248);
-  color:blueviolet;
-  margin: 0px !important;
-  border-radius: 0px!important;
-}
-
-.textarea{
-  margin-bottom:5px;
-  min-height:200px!important;
-  overflow-y: auto!important;
-}
-
-.textarea:focus {
-  border: 1px solid rgb(228, 23, 255);
-  box-shadow: 0 0 5px rgb(48, 204, 0);
-  outline: none;
-}
-
-#outputtext{
-  background-color:#f3f3f3;
-}
 
 #translate{
   float:right;
@@ -170,82 +128,10 @@ body {
 }
 
 
-.grid-container {
-  position: absolute;
-  width: 550px;
-  background-color: white;
-  padding:10px 20px 20px 20px;
-  border-radius:5px;/* Set your desired background color */
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 100; /* Ensure it appears above other elements */
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.grid-item {
-  flex: 0 0 calc(33.33% - 10px); /* Adjust the width as needed */
-  padding: 3px 3px 3px 20px;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.grid-item:hover {
-  background-color:rgb(233, 233, 233)
-}
-
-.settings-card {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-  z-index: 200; /* Ensure it appears above other elements */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  min-width:600px;
-  min-height:700px;
-}
-
-.card-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  color: #fff;
-  font-size: 20px;
-}
-
-.selected {
-  color:blueviolet!important;
-  margin: 0px !important;
-  border-bottom: 3px solid blueviolet!important;
-  border-radius: 0px!important;
-}
-
-.gridSelected{
-  color:blueviolet!important;
-  background-color:rgb(245, 239, 248);
-}
 
 button {
   margin: 10px;
   width: 200px;
-}
-
-select,
-input,
-textarea {
-  margin: 10px;
 }
 
 .flex-space {
