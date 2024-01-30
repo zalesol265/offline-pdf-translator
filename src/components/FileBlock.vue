@@ -4,48 +4,54 @@
     <p :title="key">
       {{ makeName() }}
     </p>
-    <div class="del-file">
+    <div class="file-status">
       <button
+        v-if="requestStatus == 'not started'"
         type="button"
         @click="$emit('remove-file')"
         title="Remove file"
       >
         <b>&times;</b>
       </button>
+      <b-icon
+        v-else-if="requestStatus == 'in progress'"
+        icon="arrow-clockwise"
+        class="spin"
+      ></b-icon>
+      <b-icon
+        v-else-if="requestStatus == 'success'"
+        icon="check2"
+        class="success"
+      ></b-icon>
+      <b-icon v-else icon="dash-circle" class="error"></b-icon>
     </div>
   </div>
-  <p>{{triggerTranslation}}</p>
 </template>
 
 <script>
-
-
 export default {
-    props: {
-        file: File,
-        input_lang: String,
-        output_lang: String,
-        triggerTranslation: Boolean
+  props: {
+    file: File,
+    input_lang: String,
+    output_lang: String,
+    triggerTranslation: Boolean,
+  },
+  data() {
+    return {
+      requestStatus: "not started",
+    };
+  },
+  watch: {
+    triggerTranslation(curVal) {
+      if (curVal) {
+        this.translateDocument();
+      }
     },
-    data() {
-        return {
-        requestStatus: "not started",
-        };
-    },
-    watch: {
-        triggerTranslation(curVal) {
-            alert("here");
-            if (curVal) {
-                alert("starting translation");
-                this.translateDocument();
-            }
-        }
-    },
+  },
 
   methods: {
-
     makeName() {
-        let name = this.file.name;
+      let name = this.file.name;
       if (name.length > 24) {
         return (
           name.split(".")[0].substring(0, 20) +
@@ -57,24 +63,21 @@ export default {
     },
 
     getFileType() {
-        let name = this.file.name;
-        let fileType = name.split(".")[name.split(".").length - 1];
-        return fileType.toUpperCase();
+      let name = this.file.name;
+      let fileType = name.split(".")[name.split(".").length - 1];
+      return fileType.toUpperCase();
     },
     async translateDocument() {
       if (this.file) {
-        this.requestStatus="in progress";
+        this.requestStatus = "in progress";
         const url = "http://127.0.0.1:5000/documentTranslate";
 
         // Create FormData object
         const formData = new FormData();
-        formData.append("file", this.file); // Assuming the first file in the list
-
-        // Add other data to the FormData object
+        formData.append("file", this.file);
         formData.append("input_lang", this.input_lang);
         formData.append("output_lang", this.output_lang);
 
-        // Make a POST request to your backend endpoint
         try {
           const response = await fetch(url, {
             method: "POST",
@@ -82,7 +85,6 @@ export default {
           });
 
           if (response.ok) {
-            // Handle the response from the backend
             const data = await response.json();
             console.log(data);
             this.requestStatus = "success";
@@ -99,3 +101,37 @@ export default {
   },
 };
 </script>
+
+
+<style scoped>
+.file-status {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+svg {
+  font-size: larger;
+}
+
+.success {
+  color: green;
+  font-size: x-large;
+}
+
+.error {
+  color: red;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1.5s linear infinite;
+}
+</style>

@@ -37,20 +37,6 @@
           :triggerTranslation="triggerTranslation"
           @remove-file="remove(files.indexOf(file))"
         />
-        <!-- <div class="file-tag">{{ getFileType(file.name) }}</div>
-          <p :title="file.name">
-            {{ makeName(file.name) }}
-          </p>
-          <div class="del-file">
-            <button
-              type="button"
-              @click="remove(files.indexOf(file))"
-              title="Remove file"
-            >
-              <b>&times;</b>
-            </button>
-          </div> -->
-        <!-- </div> -->
       </div>
     </div>
   </div>
@@ -138,10 +124,6 @@ export default {
 
 p {
   margin: 0px;
-}
-
-.del-file {
-  margin-left: auto;
 }
 
 button {
